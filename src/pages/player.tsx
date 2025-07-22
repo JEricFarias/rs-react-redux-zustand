@@ -1,27 +1,25 @@
+import { useCurrentLesson, useStore } from "../zustand-store";
 import { ChevronDown, MessageCircle } from "lucide-react";
 import { Header } from "../components/header";
-import { Video } from "../components/video";
 import { Module } from "../components/module";
-import { useAppDispatch, useAppSelector } from "../store";
+import { Video } from "../components/video";
 import { useEffect } from "react";
-import { loadCourse, useCurrentLesson } from "../store/slices/player";
 
 export function Player() {
-  const dispatch = useAppDispatch();
-  const modules = useAppSelector((state) => state.player.course?.modules);
-  const isLoading = useAppSelector((state) => state.player.isLoading);
-
-  const { lesson } = useCurrentLesson();
-
-  useEffect(() => {
-    dispatch(loadCourse());
-  }, [dispatch]);
+  const lesson = useCurrentLesson();
+  const load = useStore((state) => state.load);
+  const course = useStore((state) => state.course);
+  const isLoading = useStore((state) => state.isLoading);
 
   useEffect(() => {
-    if (lesson) {
-      document.title = lesson.title;
+    load();
+  }, [load]);
+
+  useEffect(() => {
+    if (lesson?.title) {
+      document.title = `Assistindo ${lesson.title}`;
     }
-  }, [lesson]);
+  }, [lesson?.title]);
 
   return (
     <div className="h-screen bg-zinc-950 text-zinc-50 flex justify-center items-center">
@@ -39,8 +37,8 @@ export function Player() {
         </div>
 
         <main
-          data-isLoading={isLoading}
-          className="relative flex data-[isLoading=true]:h-[500px] overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900 shadow pr-80"
+          data-isloading={isLoading}
+          className="relative flex data-[isloading=true]:h-[500px] overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900 shadow pr-80"
         >
           <div className="flex-1">
             <Video />
@@ -67,7 +65,8 @@ export function Player() {
                       <ChevronDown className="w-6 h-6 text-zinc-900" />
                     </div>
                   ))
-              : modules?.map((module, index) => (
+              : course?.modules &&
+                course?.modules?.map((module, index) => (
                   <Module
                     key={module.id}
                     amountOfLessons={module.lessons.length}
